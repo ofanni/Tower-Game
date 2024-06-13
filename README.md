@@ -2,9 +2,9 @@
 # Torony Logikai Játék
 Egyszemélyes logikai játék
 
-Adott 8 különböző méretű, piros és kék színű közepen lyukas korong, melyeket a 24. ábrán látható módon rendezünk el három rúdon. Bármelyik rúdról át lehet helyezni a legfelső korongot egy olyan rúdra, melyen a legfelső korong nagyobb vagy megegyező méretű az áthelyezettel. Érjük el, hogy a piros korongok az első, a kék korongok pedig a második rúdra kerüljenek.
+Adott 4-4 különböző méretű, piros és kék színű közepen lyukas korong, melyeket három rúdon rendezünk el. Bármelyik rúdról át lehet helyezni a legfelső korongot egy olyan rúdra, melyen a legfelső korong nagyobb vagy megegyező méretű az áthelyezettel. Érjük el, hogy a piros korongok az első, a kék korongok pedig a második rúdra kerüljenek.
 
-## Solution 2-2 korong esetén
+## Megoldás: 2-2 korong esetén
    1. (2,1) - (1,0)
    2. (3,1) - (3,2)
    3. (1,0) - (2,2)
