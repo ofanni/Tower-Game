@@ -3,26 +3,37 @@ package gui;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.ObjectBinding;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import json.GameResults;
+import json.ResultManager;
 import model.Colors;
 import model.Position;
 import model.TowerPuzzleModel;
 import org.tinylog.Logger;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
 public class PuzzleController {
 
+    @FXML
+    private VBox box;
+
+    private String playerName;
 
     @FXML
     private GridPane grid;
@@ -33,27 +44,33 @@ public class PuzzleController {
     @FXML
     private ImageView[] pieceViews;
 
+    private boolean isCompleted;
+
+    private int moveCount;
+
 
     @FXML
     public void initialize() {
+        moveCount = 0;
         for (int i = 0; i < TowerPuzzleModel.ROW_SIZE; i++) {
             var rowConstraint = new RowConstraints(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
             rowConstraint.setPrefHeight(45);
             grid.getRowConstraints().add(i, rowConstraint);
-
         }
         grid.setPrefHeight(TowerPuzzleModel.ROW_SIZE * 50);
-
+        box.setPrefHeight(grid.getPrefHeight() + 100);
         pieceViews = Stream.of("kkorong.png", "pkorong.png", "rud.png")
                 .map(s -> "/images/" + s)
                 .map(Image::new)
                 .map(ImageView::new)
                 .toArray(ImageView[]::new);
-
         populateGrid();
-
-
+        Platform.runLater(() -> {
+            Stage stage = (Stage) grid.getScene().getWindow();
+            playerName = stage.getUserData().toString();
+        });
     }
+
 
     private void populateGrid() {
         grid.getChildren().removeAll(grid.getChildren());
@@ -111,19 +128,20 @@ public class PuzzleController {
         } else if (selector.getPhase().equals(BoardGameMoveSelector.Phase.SELECT_FROM)) {
             selector.select(model.diskProperty(row, col).get().getPosition());
         } else if (selector.getPhase().equals(BoardGameMoveSelector.Phase.SELECT_TO) && !(model.getTopDisks().contains(new Position(row + 1, col)) || row == grid.getRowCount() - 1)) {
-            Logger.info("invalid,can't place it here");
+            Logger.info("invalid");
             selector.reset();
         } else if (selector.getPhase().equals(BoardGameMoveSelector.Phase.SELECT_TO) && model.diskProperty(row, col).get().getColors() == Colors.EMPTY) {
 
             selector.select(model.diskProperty(row, col).get().getPosition());
             if (selector.isInvalidSelection()) {
                 selector.reset();
-                Logger.info("invalid,can't place it here");
+                Logger.info("invalid");
             } else {
                 if (selector.isReadyToMove()) {
-                    Logger.info("moved! {} => {}", selector.getFrom(), selector.getTo());
+                    Logger.info("{} moved! {} => {}", playerName, selector.getFrom(), selector.getTo());
                     selector.makeMove();
                     populateGrid();
+                    moveCount++;
                     if (model.isSolved()) {
                         solved();
                     }
@@ -132,11 +150,36 @@ public class PuzzleController {
         } else {
             selector.reset();
         }
+        System.out.println();
     }
 
-    private void solved() {
+    @FXML
+    private void onGiveUp() throws IOException {
+        Logger.info("{} gave up", playerName);
+        isCompleted = false;
+        toNext();
+    }
+
+    private void solved() throws IOException {
         Logger.info("solved");
-        Platform.exit();
+        isCompleted = true;
+        toNext();
+    }
+
+    private void toNext() throws IOException {
+        saveData();
+        Logger.info("{} moved to the next window", playerName);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/end.fxml"));
+        Parent root = loader.load();
+        Stage stage = (Stage) ((Node) grid).getScene().getWindow();
+        stage.setScene(new Scene(root));
+        stage.show();
+    }
+
+    private void saveData() throws IOException {
+        var outputData = new GameResults(playerName, moveCount, Boolean.toString(isCompleted));
+        ResultManager.saveGameDataToJSON(outputData);
+        Logger.info("Game data saved to JSON.");
     }
 
 

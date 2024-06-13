@@ -20,8 +20,8 @@ public class TowerPuzzleModel implements TwoPhaseMoveState<Position> {
     @Setter
     private Disk[][] rods;
     public static final int COL_SIZE = 3;
-    private static int numberOfDisks = 4;
-    public static int ROW_SIZE = numberOfDisks * 2;
+    private static final int NUMBER_OF_DISKS = 4;
+    public static int ROW_SIZE = NUMBER_OF_DISKS * 2;
 
     private ReadOnlyObjectWrapper<Disk>[][] rodsWrapper = new ReadOnlyObjectWrapper[ROW_SIZE][COL_SIZE];
 
@@ -38,14 +38,14 @@ public class TowerPuzzleModel implements TwoPhaseMoveState<Position> {
     public TowerPuzzleModel() {
 
         this.rods = new Disk[ROW_SIZE][COL_SIZE];
-        for (int i = 0; i < numberOfDisks; i++) {
+        for (int i = 0; i < NUMBER_OF_DISKS; i++) {
             for (int j = 0; j < 3; j++) {
                 this.rods[i][j] = new Disk(Colors.EMPTY, new Position(i, j), 0);
             }
         }
-        int size = numberOfDisks;
+        int size = NUMBER_OF_DISKS;
         boolean isBlue = true;
-        for (int i = ROW_SIZE - 1; i >= numberOfDisks; i--) {
+        for (int i = ROW_SIZE - 1; i >= NUMBER_OF_DISKS; i--) {
             if (isBlue) {
                 this.rods[i][0] = new Disk(Colors.BLUE, new Position(i, 0), size);
                 this.rods[i][1] = new Disk(Colors.RED, new Position(i, 1), size);
@@ -111,18 +111,18 @@ public class TowerPuzzleModel implements TwoPhaseMoveState<Position> {
     public boolean isSolved() {
 
 
-        boolean isJo = true;
-        for (int i = numberOfDisks; i < rods.length; i++) {
+        boolean isRight = true;
+        for (int i = NUMBER_OF_DISKS; i < rods.length; i++) {
             if (rods[i][0].getColors() != Colors.RED) {
-                isJo = false;
+                isRight = false;
                 break;
             }
             if (rods[i][1].getColors() != Colors.BLUE) {
-                isJo = false;
+                isRight = false;
                 break;
             }
         }
-        return isJo;
+        return isRight;
 
     }
 
